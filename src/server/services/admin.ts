@@ -14,7 +14,7 @@ import {
   supportNotes,
   webhookEvents,
 } from "@/server/db/schema";
-import { env } from "@/server/env";
+import { env, isSupabaseConfigured } from "@/server/env";
 import { ForbiddenError, NotFoundError } from "@/server/lib/errors";
 import { retryJob } from "@/server/jobs/queue";
 import { audit } from "./activity";
@@ -62,7 +62,7 @@ export async function adminOverview(user: CurrentUser) {
         ai: env().AI_PROVIDER !== "none" && Boolean(env().XAI_API_KEY) && env().AI_MODEL ? `xAI Grok (${env().AI_MODEL})` : "not configured",
         smtp: env().SMTP_HOST && env().EMAIL_FROM ? "configured" : "not configured",
         whatsappWebhook: env().WHATSAPP_APP_SECRET && env().WHATSAPP_VERIFY_TOKEN ? "configured" : "not configured",
-        supabase: env().NEXT_PUBLIC_SUPABASE_URL ? "configured" : "not configured (local demo login)",
+        supabase: isSupabaseConfigured() ? "configured" : "not configured (local demo login)",
       },
     };
   });

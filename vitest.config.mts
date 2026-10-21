@@ -23,6 +23,8 @@ export default defineConfig({
       AI_PROVIDER: "xai",
       XAI_API_KEY: "",
       AI_MODEL: "",
+      SUPABASE_URL: "",
+      SUPABASE_ANON_KEY: "",
       NEXT_PUBLIC_SUPABASE_URL: "",
       NEXT_PUBLIC_SUPABASE_ANON_KEY: "",
       WHATSAPP_APP_SECRET: "test-whatsapp-app-secret",
