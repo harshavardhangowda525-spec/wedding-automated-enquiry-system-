@@ -1,5 +1,5 @@
 import { eq, sql } from "drizzle-orm";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { asSystem } from "@/server/db/client";
 import { jobs } from "@/server/db/schema";
 import { backoffMs, claimJobs, enqueueJob, PermanentJobError, runDueJobs } from "@/server/jobs/queue";
@@ -10,6 +10,11 @@ async function getJob(id: string) {
 }
 
 describe("durable job queue", () => {
+  beforeEach(async () => {
+    // Jobs left by other test files must not compete for the claim limit.
+    await asSystem((tx) => tx.execute(sql`update wf.jobs set status = 'cancelled' where status in ('pending', 'running')`));
+  });
+
   it("deduplicates jobs by idempotency key", async () => {
     const key = `test-dedupe-${Date.now()}`;
     const a = await asSystem((tx) => enqueueJob(tx, { type: "test.noop", idempotencyKey: key }));
