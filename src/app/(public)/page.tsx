@@ -5,7 +5,7 @@ import { ButtonLink, Logo } from "@/components/ui";
 const features = [
   { icon: MessageCircle, title: "Every enquiry in one place", body: "Website form, Instagram, WhatsApp, phone calls and referrals land in one organised pipeline with a unique reference." },
   { icon: BellRing, title: "Follow-ups that never slip", body: "Durable, business-hours-aware reminders and tasks. Gentle by default, editable by you, paused in one click." },
-  { icon: Sparkles, title: "Claude-powered drafting", body: "Summaries, replies, follow-ups and quotation drafts grounded in your real services and prices. You approve everything." },
+  { icon: Sparkles, title: "AI-assisted drafting", body: "Summaries, replies, follow-ups and quotation drafts grounded in your real services and prices. You approve everything." },
   { icon: CalendarCheck, title: "Dates you can trust", body: "Tentative holds, confirmed bookings and conflict warnings. A date is never shown as available unless you recorded it." },
   { icon: FileText, title: "Branded quotations", body: "Deterministic totals, taxes, deposits and milestones with PDF export. Acceptance never silently becomes a booking." },
   { icon: ShieldCheck, title: "Built for trust", body: "Consent records, opt-out handling, tenant isolation enforced in the database, and an audit trail for sensitive actions." },

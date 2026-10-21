@@ -88,7 +88,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
   const canEdit = roleAtLeast(ctx.role, "staff");
   const isAdmin = roleAtLeast(ctx.role, "admin");
   const ai = aiConfigured() && ctx.studio.aiEnabled;
-  const aiReason = !ctx.studio.aiEnabled ? "AI is turned off in Settings for this studio." : "AI is not configured on this server (no ANTHROPIC_API_KEY). Everything else keeps working.";
+  const aiReason = !ctx.studio.aiEnabled ? "AI is turned off in Settings for this studio." : "AI is not configured on this server (XAI_API_KEY and AI_MODEL must be set). Everything else keeps working.";
   const summary = lead.aiSummary as Summary | null;
   const priority = data.insights.priority?.content as { priority: "low" | "medium" | "high"; explanation: string; factors: string[] } | undefined;
   const convo = data.insights.conversation_summary?.content as { summary: string; unansweredQuestions: string[]; commitmentsMade: string[] } | undefined;

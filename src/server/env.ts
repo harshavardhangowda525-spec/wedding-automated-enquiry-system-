@@ -20,10 +20,10 @@ const schema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: optional,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: optional,
 
-  AI_PROVIDER: z.preprocess(blank, z.enum(["anthropic", "none"]).default("anthropic")),
-  ANTHROPIC_API_KEY: optional,
+  AI_PROVIDER: z.preprocess(blank, z.enum(["xai", "none"]).default("xai")),
+  XAI_API_KEY: optional,
   // Base URL is explicit so the app never inherits a base URL meant for other tooling.
-  AI_BASE_URL: z.preprocess(blank, z.string().url().default("https://api.anthropic.com")),
+  AI_BASE_URL: z.preprocess(blank, z.string().url().default("https://api.x.ai/v1")),
   AI_MODEL: optional,
   AI_TIMEOUT_MS: num(z.coerce.number().int().positive().default(30000)),
   AI_MAX_RETRIES: num(z.coerce.number().int().min(0).max(5).default(2)),

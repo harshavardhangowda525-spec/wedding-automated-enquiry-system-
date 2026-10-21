@@ -34,7 +34,7 @@ afterEach(() => setAiProviderForTests(undefined));
 describe("AI service", () => {
   it("reports unavailability clearly when no credentials are configured", async () => {
     const { studio, owner, lead } = await setup("No AI");
-    // Real resolution path: ANTHROPIC_API_KEY is empty in the test env.
+    // Real resolution path: XAI_API_KEY is empty in the test env.
     await expect(asMember(studio.id, owner.id, "owner", (svc) => summarizeEnquiry(svc, lead.id))).rejects.toBeInstanceOf(AiUnavailableError);
     await expect(asMember(studio.id, owner.id, "owner", (svc) => summarizeEnquiry(svc, lead.id))).rejects.toThrow(/not configured/);
   });

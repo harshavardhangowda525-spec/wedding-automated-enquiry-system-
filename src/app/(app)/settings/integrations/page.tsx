@@ -80,8 +80,8 @@ export default async function IntegrationsSettings() {
         <p className="p-5 text-sm text-muted">SMTP acceptance is shown as “Sent”. Inbox delivery is not confirmed by SMTP, so emails never show as “Delivered”.</p>
       </Card>
       <Card>
-        <CardHeader title="Claude AI" description="Summaries, reply drafts, priority and next-step suggestions, quotation drafts." action={<Badge tone={aiConfigured() ? "success" : "neutral"}>{aiConfigured() ? "configured" : "not configured"}</Badge>} />
-        <p className="p-5 text-sm text-muted">Configured by the platform operator (ANTHROPIC_API_KEY, AI_MODEL). Turn AI on or off for your studio in AI, data &amp; privacy.</p>
+        <CardHeader title="AI (xAI Grok)" description="Summaries, reply drafts, priority and next-step suggestions, quotation drafts." action={<Badge tone={aiConfigured() ? "success" : "neutral"}>{aiConfigured() ? "configured" : "not configured"}</Badge>} />
+        <p className="p-5 text-sm text-muted">Configured by the platform operator (XAI_API_KEY, AI_MODEL). Turn AI on or off for your studio in AI, data &amp; privacy.</p>
       </Card>
       <Card>
         <CardHeader title="Google Calendar" action={<Badge>not connected</Badge>} />

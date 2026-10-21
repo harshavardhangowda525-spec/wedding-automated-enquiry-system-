@@ -59,7 +59,7 @@ export async function adminOverview(user: CurrentUser) {
       integrations,
       platform: {
         mode: env().APP_MODE,
-        ai: env().AI_PROVIDER !== "none" && Boolean(env().ANTHROPIC_API_KEY) ? `configured (${env().AI_MODEL ?? "default model"})` : "not configured",
+        ai: env().AI_PROVIDER !== "none" && Boolean(env().XAI_API_KEY) && env().AI_MODEL ? `xAI Grok (${env().AI_MODEL})` : "not configured",
         smtp: env().SMTP_HOST && env().EMAIL_FROM ? "configured" : "not configured",
         whatsappWebhook: env().WHATSAPP_APP_SECRET && env().WHATSAPP_VERIFY_TOKEN ? "configured" : "not configured",
         supabase: env().NEXT_PUBLIC_SUPABASE_URL ? "configured" : "not configured (local demo login)",

@@ -31,7 +31,7 @@ Events produced by automation carry a depth; anything deeper than 2 is dropped, 
 ## AI guardrails
 
 - The model sees an explicit JSON context: studio services with prices (or "price on request"), the enquiry and recent history. The system prompt forbids inventing prices, policies, availability or booking confirmation.
-- Output goes through structured outputs with Zod schemas and is validated again on our side. Refusals and truncated output are errors.
+- Output is requested from xAI Grok as JSON-schema structured output and validated again with Zod on our side. Refusals, truncated and malformed output are errors.
 - Reply drafts are scanned for currency amounts that match no configured price, and each one is flagged to the approver.
 - Quotation drafts: the model picks only service ids and quantities. Unknown ids are discarded, and prices and totals come from the database and the deterministic calculator.
 - Each call is rate-limited per studio and recorded in `ai_usage` (also on failure, on a separate connection). When AI is unavailable the app keeps working, and automations fall back to templates.

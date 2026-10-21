@@ -12,7 +12,7 @@ WeddingFlow AI centralises enquiries, helps staff respond professionally and on 
 | Public enquiry form | Branded `/enquire/<studio>` page; configurable optional fields; consent capture; signed anti-spam token, honeypot, rate limiting, duplicate detection; reference number; "received, not booked" confirmation |
 | Lead CRM | `/leads` table and pipeline views, search & filters, pagination, bulk actions with per-lead validation, CSV export (admins, audited), lead detail with timeline, notes, tags, assignment, contact logging, deposit recording, validated stage transitions |
 | Follow-ups & calendar | Task workspace (overdue / today / upcoming), month/week/day calendar, consultations, holds, bookings, quotation expiries; availability derived only from recorded data; conflict warnings |
-| Claude-powered AI | Enquiry & conversation summaries, reply/follow-up drafts, priority suggestion with explanation, next-step suggestion, quotation drafts built from configured prices only. Schema-validated output, timeouts, bounded retries, per-studio rate limits, usage tracking, graceful "AI unavailable" behaviour |
+| AI assistant (xAI Grok) | Enquiry & conversation summaries, reply/follow-up drafts, priority suggestion with explanation, next-step suggestion, quotation drafts built from configured prices only. Schema-validated output, timeouts, bounded retries, per-studio rate limits, usage tracking, graceful "AI unavailable" behaviour |
 | Automation engine | Durable Postgres job queue (survives restarts, `SKIP LOCKED`, idempotency keys, exponential backoff, dead-lettering, stale-lock recovery). Rules with triggers, conditions, actions, delays in business days, business-hours windows, dry-run, execution history, loop protection and a studio-wide pause switch |
 | Messaging | WhatsApp Business Platform Cloud API (templates, 24-hour window, signed webhooks, idempotent status/inbound processing, STOP opt-out) and SMTP email. Accurate states (draft → awaiting approval → queued → sending → sent → delivered/failed/skipped/cancelled). Demo adapter labels every simulated send "Demo — not sent" |
 | Quotations | Branded builder, deterministic server-side totals in paise (discounts, GST, deposit, milestones), approval → sent → accepted/rejected/expired, PDF export. Acceptance never auto-confirms a booking |
@@ -22,7 +22,7 @@ WeddingFlow AI centralises enquiries, helps staff respond professionally and on 
 
 ## Tech stack
 
-Next.js 16 (App Router, server actions) · React 19 · TypeScript · Tailwind CSS 4 · PostgreSQL (Supabase-compatible) via Drizzle ORM · Supabase Auth (`@supabase/ssr`) · Zod · official Anthropic SDK · nodemailer · pdf-lib · Vitest · Playwright.
+Next.js 16 (App Router, server actions) · React 19 · TypeScript · Tailwind CSS 4 · PostgreSQL (Supabase-compatible) via Drizzle ORM · Supabase Auth (`@supabase/ssr`) · Zod · xAI Grok API (Chat Completions, structured outputs) · nodemailer · pdf-lib · Vitest · Playwright.
 
 ## Quick start (local demo)
 
@@ -80,7 +80,7 @@ src/server/auth         Supabase + local demo auth, studio context & roles
 src/server/services     domain services (leads, enquiries, tasks, calendar, quotations, analytics, settings, admin)
 src/server/automation   rule engine, conditions, periodic sweep
 src/server/messaging    adapters (WhatsApp Cloud, SMTP, demo), send policy, webhooks
-src/server/ai           provider abstraction + Claude features
+src/server/ai           provider abstraction (xAI Grok) + AI features
 src/server/jobs         durable job queue and handlers
 drizzle/                SQL migrations (0001_rls.sql holds the tenant-isolation policies)
 scripts/                migrate, worker, demo seed

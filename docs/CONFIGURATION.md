@@ -28,16 +28,16 @@ The app verifies every request with `supabase.auth.getUser()` (a server round-tr
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `AI_PROVIDER` | `anthropic` | `none` disables AI everywhere. |
-| `ANTHROPIC_API_KEY` | – | Without it, AI features show "AI unavailable" and automations fall back to studio templates. |
-| `AI_MODEL` | `claude-opus-5-5` | Any model identifier enabled on your Anthropic account. |
-| `AI_BASE_URL` | `https://api.anthropic.com` | Explicit so the app never inherits a base URL meant for other tooling. |
+| `AI_PROVIDER` | `xai` | `none` disables AI everywhere. |
+| `XAI_API_KEY` | – | xAI API key. Without it, AI features show "AI unavailable" and automations fall back to studio templates. |
+| `AI_MODEL` | – (required) | A Grok model identifier enabled for your key, copied from the xAI console's model list. There is no built-in default, so the app never guesses a model name. |
+| `AI_BASE_URL` | `https://api.x.ai/v1` | xAI API base URL. Requests go to `{AI_BASE_URL}/chat/completions`. |
 | `AI_TIMEOUT_MS` | 30000 | Per-request timeout. |
-| `AI_MAX_RETRIES` | 2 | SDK retries for 408/409/429/5xx and connection errors. |
+| `AI_MAX_RETRIES` | 2 | Retries with exponential backoff for 408/409/429/5xx and network errors. |
 | `AI_RATE_LIMIT_PER_HOUR` | 120 | Per-studio AI calls per hour. |
 | `AI_PRICE_INPUT_PER_MTOK_USD`, `AI_PRICE_OUTPUT_PER_MTOK_USD` | – | Set from current provider pricing to show cost estimates in platform admin. When unset, no estimate is shown. |
 
-Studios can turn AI off in **Settings → AI, data & privacy**; then no enquiry data is sent to the provider. For models that support it, the server-side refusal fallback (`fallbacks: "default"`) is enabled so a declined request is retried on a fallback model automatically.
+Studios can turn AI off in **Settings → AI, data & privacy**; then no enquiry data is sent to xAI. Requests use JSON-schema structured outputs (`response_format: json_schema`, `strict: true`), and every response is validated again with Zod before use.
 
 ## WhatsApp Business Platform (Cloud API)
 
