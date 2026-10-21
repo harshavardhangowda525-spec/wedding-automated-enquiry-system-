@@ -112,8 +112,19 @@ export async function getAnalytics(svc: ServiceContext, input: { from: string; t
     lostReasons: lostReasons.map((r) => ({ reason: r.reason, count: Number(r.n) })),
     sources: sources.map((r) => ({ source: r.source, count: Number(r.n) })),
     serviceDemand: serviceDemand.map((r) => ({ name: r.name, count: Number(r.n) })),
-    daily: daily.map((r) => ({ day: r.day, count: Number(r.n) })),
+    daily: fillDays(from, to, daily),
   };
+}
+
+/** Every day in the range, with zero for days that had no enquiries (capped at 366 days). */
+function fillDays(from: string, to: string, rows: { day: string; n: number }[]) {
+  const counts = new Map(rows.map((r) => [r.day, Number(r.n)]));
+  const out: { day: string; count: number }[] = [];
+  for (let d = new Date(`${from}T00:00:00Z`); d.toISOString().slice(0, 10) <= to && out.length < 366; d.setUTCDate(d.getUTCDate() + 1)) {
+    const key = d.toISOString().slice(0, 10);
+    out.push({ day: key, count: counts.get(key) ?? 0 });
+  }
+  return out;
 }
 
 export type Analytics = Awaited<ReturnType<typeof getAnalytics>>;

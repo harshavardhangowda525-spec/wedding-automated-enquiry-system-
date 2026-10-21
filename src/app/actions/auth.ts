@@ -7,7 +7,7 @@ import type { ActionState } from "@/lib/action-state";
 import { ACTIVE_STUDIO_COOKIE, getMemberships, requireUser } from "@/server/auth/context";
 import { signInWithPassword, signOut, signUpWithPassword } from "@/server/auth/session";
 import { AppError, RateLimitError } from "@/server/lib/errors";
-import { checkRateLimit } from "@/server/lib/rate-limit";
+import { checkRateLimit, isRateLimited } from "@/server/lib/rate-limit";
 import { clientIpHash } from "@/server/lib/request";
 import { acceptInvites, createStudio, slugify } from "@/server/services/studios";
 import { runAction, str } from "./_run";
@@ -17,9 +17,16 @@ const credentials = z.object({
   password: z.string().min(8, "At least 8 characters").max(200),
 });
 
+const ATTEMPTS = 10;
+const WINDOW_SECONDS = 15 * 60;
+const limitKey = async (kind: string) => `auth:${kind}:${(await clientIpHash()) ?? "unknown"}`;
+
+/** Blocks a connection after too many failed attempts (successful attempts are not counted). */
 async function limit(kind: string) {
-  const ip = (await clientIpHash()) ?? "unknown";
-  if (!(await checkRateLimit(`auth:${kind}:${ip}`, 10, 15 * 60))) throw new RateLimitError("Too many attempts. Please wait a few minutes.");
+  if (await isRateLimited(await limitKey(kind), ATTEMPTS, WINDOW_SECONDS)) throw new RateLimitError("Too many attempts. Please wait a few minutes.");
+}
+async function recordFailure(kind: string) {
+  await checkRateLimit(await limitKey(kind), ATTEMPTS, WINDOW_SECONDS);
 }
 
 export async function signInAction(_: ActionState, form: FormData): Promise<ActionState> {
@@ -27,7 +34,10 @@ export async function signInAction(_: ActionState, form: FormData): Promise<Acti
     await limit("signin");
     const data = credentials.parse({ email: str(form, "email"), password: str(form, "password") });
     const res = await signInWithPassword(data.email, data.password);
-    if (!res.ok) throw new AppError(res.error);
+    if (!res.ok) {
+      await recordFailure("signin");
+      throw new AppError(res.error);
+    }
   });
   if (!result.ok) return result;
   const user = await requireUser();
@@ -44,6 +54,8 @@ export async function signUpAction(_: ActionState, form: FormData): Promise<Acti
       password: str(form, "password"),
       fullName: str(form, "fullName"),
     });
+    // Every sign-up attempt counts, to slow down account creation abuse.
+    await recordFailure("signup");
     const res = await signUpWithPassword(data.email, data.password, data.fullName);
     if (!res.ok) throw new AppError(res.error);
     needsConfirmation = res.needsConfirmation;

@@ -114,7 +114,7 @@ export function Checkbox({ label, className, ...props }: ComponentProps<"input">
 
 export function Card({ className, children, ...props }: ComponentProps<"div">) {
   return (
-    <div className={cn("rounded-xl border border-line bg-white shadow-[0_1px_2px_rgba(36,33,30,0.04)]", className)} {...props}>
+    <div className={cn("min-w-0 rounded-xl border border-line bg-white shadow-[0_1px_2px_rgba(36,33,30,0.04)]", className)} {...props}>
       {children}
     </div>
   );
@@ -183,7 +183,7 @@ export function Badge({ tone = "neutral", children, className, title }: { tone?:
     <span
       title={title}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap",
+        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-sans text-xs font-medium whitespace-nowrap",
         tone === "neutral" && "bg-sand text-ink-soft",
         tone === "gold" && "bg-gold-soft text-gold-strong",
         tone === "success" && "bg-success-soft text-success",
@@ -276,7 +276,7 @@ export function Table({ children, className }: { children: ReactNode; className?
     </div>
   );
 }
-export const th = "border-b border-line bg-sand/50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted";
+export const th = "text-left border-b border-line bg-sand/50 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted";
 export const td = "border-b border-line px-4 py-3 align-top";
 
 export function Tabs({ items, current }: { items: { href: string; label: string; key: string; count?: number }[]; current: string }) {

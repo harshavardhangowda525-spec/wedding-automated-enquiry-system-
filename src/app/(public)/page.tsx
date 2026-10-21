@@ -14,20 +14,21 @@ const features = [
 export default function Home() {
   return (
     <div className="min-h-dvh bg-ivory">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
+      <header className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-5 sm:px-5">
         <Logo />
         <nav className="flex items-center gap-2">
           <ButtonLink href="/login" variant="ghost">
             Sign in
           </ButtonLink>
           <ButtonLink href="/register" variant="primary">
-            Create studio account
+            <span className="sm:hidden">Start</span>
+            <span className="hidden sm:inline">Create studio account</span>
           </ButtonLink>
         </nav>
       </header>
 
       <main>
-        <section className="relative mx-auto max-w-6xl px-5 pb-16 pt-10 md:pt-20">
+        <section className="relative mx-auto max-w-6xl overflow-hidden px-5 pb-16 pt-10 md:overflow-visible md:pt-20">
           <div aria-hidden className="pointer-events-none absolute -right-24 top-0 hidden h-[420px] w-[420px] rounded-full border border-gold/30 md:block" />
           <div aria-hidden className="pointer-events-none absolute right-24 top-24 hidden h-[300px] w-[300px] rounded-full border border-ink/10 md:block" />
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gold">For wedding photography &amp; cinematography studios</p>

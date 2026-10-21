@@ -58,14 +58,22 @@ export class AnthropicProvider implements AiProvider {
 
   async generate<T>(req: GenerateRequest<T>): Promise<GenerateResult<T>> {
     const useFallback = FALLBACK_CAPABLE.test(this.model);
-    const response = await this.client.beta.messages.parse({
-      model: this.model,
-      max_tokens: req.maxTokens ?? 4000,
-      system: req.system,
-      messages: [{ role: "user", content: req.prompt }],
-      output_config: { format: betaZodOutputFormat(req.schema) },
-      ...(useFallback ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
-    });
+    let response;
+    try {
+      response = await this.client.beta.messages.parse({
+        model: this.model,
+        max_tokens: req.maxTokens ?? 4000,
+        system: req.system,
+        messages: [{ role: "user", content: req.prompt }],
+        output_config: { format: betaZodOutputFormat(req.schema) },
+        ...(useFallback ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const } : {}),
+      });
+    } catch (err) {
+      // HTTP/API failures propagate (the caller reports "AI unavailable"); anything else is the
+      // SDK failing to parse the model's output (e.g. after a refusal or truncation).
+      if (err instanceof Anthropic.APIError) throw err;
+      throw new AiInvalidOutputError("The AI response did not match the expected format");
+    }
     if (response.stop_reason === "refusal") throw new AiInvalidOutputError("The AI model declined this request");
     if (response.stop_reason === "max_tokens") throw new AiInvalidOutputError("The AI response was cut off before it finished");
     if (response.parsed_output === null || response.parsed_output === undefined) {

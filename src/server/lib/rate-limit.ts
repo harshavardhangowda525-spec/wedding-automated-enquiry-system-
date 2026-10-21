@@ -18,3 +18,12 @@ export async function checkRateLimit(key: string, limit: number, windowSeconds: 
   );
   return Number(result.rows[0]?.count ?? 0) <= limit;
 }
+
+/** Read-only check: true when `key` has already reached `limit` in the current window. */
+export async function isRateLimited(key: string, limit: number, windowSeconds: number): Promise<boolean> {
+  const windowStart = new Date(Math.floor(Date.now() / (windowSeconds * 1000)) * windowSeconds * 1000);
+  const result = await asSystem((tx) =>
+    tx.execute<{ count: number }>(sql`select count from wf.rate_limits where key = ${key} and window_start = ${windowStart.toISOString()}`),
+  );
+  return Number(result.rows[0]?.count ?? 0) >= limit;
+}

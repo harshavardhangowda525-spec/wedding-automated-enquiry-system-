@@ -1,12 +1,11 @@
 import "server-only";
 import { and, asc, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { roleAtLeast, type MemberRole } from "@/lib/domain";
 import { asSystem, withStudio, type Tx } from "@/server/db/client";
 import { profiles, studioMembers, studios } from "@/server/db/schema";
-import { ForbiddenError } from "@/server/lib/errors";
 import { getAuthUser } from "./session";
 
 export const ACTIVE_STUDIO_COOKIE = "wf_studio";
@@ -80,13 +79,15 @@ export async function requireStudio(minRole: MemberRole = "viewer"): Promise<Stu
     if (user.isPlatformAdmin) redirect("/admin");
     redirect("/onboarding");
   }
-  if (!roleAtLeast(ctx.role, minRole)) throw new ForbiddenError();
+  // UI already hides controls the role cannot use; reaching here means a direct URL.
+  if (!roleAtLeast(ctx.role, minRole)) redirect("/dashboard?denied=1");
   return ctx;
 }
 
 export async function requirePlatformAdmin(): Promise<CurrentUser> {
   const user = await requireUser();
-  if (!user.isPlatformAdmin) throw new ForbiddenError("Platform administration is restricted");
+  // Do not reveal that the admin area exists to non-admins.
+  if (!user.isPlatformAdmin) notFound();
   return user;
 }
 

@@ -3,7 +3,7 @@ import { AlertTriangle, CalendarHeart, Inbox, MailCheck } from "lucide-react";
 import Link from "next/link";
 import { markNotificationsReadAction } from "@/app/actions/work";
 import { CopyButton } from "@/components/client/copy-button";
-import { Badge, ButtonLink, Card, CardHeader, EmptyState, LeadStatusBadge, PageHeader, Stat, DemoBadge } from "@/components/ui";
+import { Alert, Badge, ButtonLink, Card, CardHeader, EmptyState, LeadStatusBadge, PageHeader, Stat, DemoBadge } from "@/components/ui";
 import { ACTIVE_STATUSES, TASK_TYPE_LABELS } from "@/lib/domain";
 import { addDaysToDateString, dateInTz, formatInTz } from "@/lib/time";
 import { inStudio } from "@/server/auth/context";
@@ -14,7 +14,8 @@ import { listTasks } from "@/server/services/tasks";
 
 export const metadata = { title: "Dashboard" };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ denied?: string }> }) {
+  const { denied } = await searchParams;
   const data = await inStudio("viewer", async (svc, ctx) => {
     const tz = ctx.studio.timezone;
     const now = new Date();
@@ -60,6 +61,11 @@ export default async function DashboardPage() {
         }
       />
 
+      {denied && (
+        <Alert tone="warning" className="mb-4" title="You don't have access to that page">
+          Your role in this studio doesn&apos;t include it. Ask a studio owner or admin if you need access.
+        </Alert>
+      )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label="Open leads" value={data.openLeads} hint="Not yet booked, won or closed" />
         <Stat label="New this week" value={data.newWeek} hint="Enquiries in the last 7 days" />
@@ -68,7 +74,7 @@ export default async function DashboardPage() {
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
           <Card>
             <CardHeader title="Follow-ups due" description="Overdue and today's tasks" action={<ButtonLink href="/tasks" size="sm" variant="ghost">View all</ButtonLink>} />
             {data.overdue.length + data.todayTasks.length === 0 ? (
@@ -122,7 +128,7 @@ export default async function DashboardPage() {
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <Card className="p-5">
             <p className="text-sm font-semibold">Your enquiry link</p>
             <p className="mt-1 break-all rounded-lg bg-sand px-3 py-2 font-mono text-xs">{enquiryUrl}</p>

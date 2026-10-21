@@ -207,7 +207,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
       )}
 
       <div className="grid gap-6 xl:grid-cols-3">
-        <div className="space-y-6 xl:col-span-2">
+        <div className="min-w-0 space-y-6 xl:col-span-2">
           {/* Date & booking */}
           <Card>
             <CardHeader title="Date & booking" description="Availability is only shown as available when your calendar records support it." />
@@ -537,7 +537,7 @@ export default async function LeadPage({ params }: { params: Promise<{ id: strin
           </Card>
         </div>
 
-        <div className="space-y-6">
+        <div className="min-w-0 space-y-6">
           <Card>
             <CardHeader title="Details" />
             <ActionForm action={updateLeadAction} className="space-y-3 p-5">
