@@ -6,9 +6,13 @@ const optional = z
   .optional()
   .transform((v) => (v && v.trim() !== "" ? v.trim() : undefined));
 
+/** Empty strings in .env files mean "not set". */
+const blank = (v: unknown) => (typeof v === "string" && v.trim() === "" ? undefined : v);
+const num = <T extends z.ZodTypeAny>(inner: T) => z.preprocess(blank, inner);
+
 const schema = z.object({
-  APP_MODE: z.enum(["demo", "production"]).default("demo"),
-  APP_URL: z.string().url().default("http://localhost:3000"),
+  APP_MODE: z.preprocess(blank, z.enum(["demo", "production"]).default("demo")),
+  APP_URL: z.preprocess(blank, z.string().url().default("http://localhost:3000")),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   APP_SECRET: z.string().min(32, "APP_SECRET must be at least 32 characters"),
   ENCRYPTION_KEY: optional,
@@ -16,23 +20,23 @@ const schema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: optional,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: optional,
 
-  AI_PROVIDER: z.enum(["anthropic", "none"]).default("anthropic"),
+  AI_PROVIDER: z.preprocess(blank, z.enum(["anthropic", "none"]).default("anthropic")),
   ANTHROPIC_API_KEY: optional,
   // Base URL is explicit so the app never inherits a base URL meant for other tooling.
-  AI_BASE_URL: z.string().url().default("https://api.anthropic.com"),
+  AI_BASE_URL: z.preprocess(blank, z.string().url().default("https://api.anthropic.com")),
   AI_MODEL: optional,
-  AI_TIMEOUT_MS: z.coerce.number().int().positive().default(30000),
-  AI_MAX_RETRIES: z.coerce.number().int().min(0).max(5).default(2),
-  AI_RATE_LIMIT_PER_HOUR: z.coerce.number().int().positive().default(120),
-  AI_PRICE_INPUT_PER_MTOK_USD: z.coerce.number().positive().optional(),
-  AI_PRICE_OUTPUT_PER_MTOK_USD: z.coerce.number().positive().optional(),
+  AI_TIMEOUT_MS: num(z.coerce.number().int().positive().default(30000)),
+  AI_MAX_RETRIES: num(z.coerce.number().int().min(0).max(5).default(2)),
+  AI_RATE_LIMIT_PER_HOUR: num(z.coerce.number().int().positive().default(120)),
+  AI_PRICE_INPUT_PER_MTOK_USD: num(z.coerce.number().positive().optional()),
+  AI_PRICE_OUTPUT_PER_MTOK_USD: num(z.coerce.number().positive().optional()),
 
   WHATSAPP_VERIFY_TOKEN: optional,
   WHATSAPP_APP_SECRET: optional,
-  WHATSAPP_GRAPH_VERSION: z.string().default("v23.0"),
+  WHATSAPP_GRAPH_VERSION: z.preprocess(blank, z.string().default("v23.0")),
 
   SMTP_HOST: optional,
-  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_PORT: num(z.coerce.number().int().positive().default(587)),
   SMTP_USER: optional,
   SMTP_PASS: optional,
   SMTP_SECURE: z
