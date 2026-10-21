@@ -357,6 +357,8 @@ export const messages = wf.table(
     purpose: text("purpose").notNull().default("general"),
     error: text("error"),
     skipReason: text("skip_reason"),
+    /** Guardrail notes for the approver (e.g. amounts in an AI draft that match no configured price). */
+    reviewNotes: text("review_notes"),
     createdByType: actorTypeEnum("created_by_type").notNull().default("user"),
     createdBy: uuid("created_by"),
     approvedBy: uuid("approved_by"),

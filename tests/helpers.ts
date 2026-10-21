@@ -70,3 +70,25 @@ export async function pgErrorMessage(promise: Promise<unknown>): Promise<string>
   }
   throw new Error("Expected the query to fail");
 }
+
+import { sql as dsql } from "drizzle-orm";
+import { jobHandlers } from "@/server/jobs/handlers";
+import { runDueJobs } from "@/server/jobs/queue";
+
+/** Makes every pending job due immediately (simulates time passing). */
+export async function makeJobsDue() {
+  await asSystem((tx) => tx.execute(dsql`update wf.jobs set run_at = now() - interval '1 second' where status = 'pending'`));
+}
+
+/** Runs due jobs until the queue is idle. Never processes sweep jobs unless asked. */
+export async function drainJobs(opts: { includeDelayed?: boolean; maxRounds?: number } = {}) {
+  let total = 0;
+  for (let i = 0; i < (opts.maxRounds ?? 10); i++) {
+    if (opts.includeDelayed) await makeJobsDue();
+    await asSystem((tx) => tx.execute(dsql`update wf.jobs set status = 'cancelled' where type = 'automation.sweep' and status = 'pending'`));
+    const { processed } = await runDueJobs(jobHandlers, { workerId: "test", limit: 100 });
+    total += processed;
+    if (processed === 0) break;
+  }
+  return total;
+}

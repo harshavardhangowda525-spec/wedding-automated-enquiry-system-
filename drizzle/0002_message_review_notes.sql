@@ -1,0 +1,1 @@
+ALTER TABLE "wf"."messages" ADD COLUMN "review_notes" text;
