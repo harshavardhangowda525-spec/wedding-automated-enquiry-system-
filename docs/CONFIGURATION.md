@@ -1,6 +1,6 @@
 # Configuration
 
-All configuration is through environment variables (see `.env.example`). Secrets are read only on the server; nothing below except the two `NEXT_PUBLIC_SUPABASE_*` values is ever sent to the browser.
+All configuration is through environment variables (see `.env.example`). All values, including the Supabase URL and key, are read only on the server and never sent to the browser.
 
 ## Core
 
@@ -18,7 +18,7 @@ All configuration is through environment variables (see `.env.example`). Secrets
 ## Supabase Auth
 
 1. Create a Supabase project. In **Authentication → URL configuration** set the Site URL to `APP_URL` and add `APP_URL/auth/callback` as a redirect URL.
-2. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Project settings → API).
+2. Set `SUPABASE_URL` (the Project URL, e.g. `https://abcdefgh.supabase.co`) and `SUPABASE_ANON_KEY` (the anon / publishable key) from Project settings → API. The older `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` names are still accepted.
 3. Email confirmation may be on or off. When it is on, users confirm via the emailed link (handled by `/auth/callback`) and then create their studio.
 4. Application data lives in the `wf` schema, which Supabase's REST API does not expose. All tables additionally have row-level security; the `anon` and `authenticated` roles have no grants on them.
 

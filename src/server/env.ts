@@ -17,6 +17,10 @@ const schema = z.object({
   APP_SECRET: z.string().min(32, "APP_SECRET must be at least 32 characters"),
   ENCRYPTION_KEY: optional,
 
+  // Supabase is only used on the server, so the unprefixed names are preferred.
+  // The NEXT_PUBLIC_ names are still accepted for older configurations.
+  SUPABASE_URL: optional,
+  SUPABASE_ANON_KEY: optional,
   NEXT_PUBLIC_SUPABASE_URL: optional,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: optional,
 
@@ -61,9 +65,13 @@ export function env(): Env {
     throw new Error(`Invalid environment configuration: ${issues}`);
   }
   const value = parsed.data;
+  const supabaseUrl = value.SUPABASE_URL ?? value.NEXT_PUBLIC_SUPABASE_URL;
+  if (supabaseUrl && !/^https?:\/\/[^/\s]+\/?$/.test(supabaseUrl)) {
+    throw new Error("Invalid environment configuration: SUPABASE_URL must be the Supabase Project URL, e.g. https://abcdefgh.supabase.co");
+  }
   if (value.APP_MODE === "production") {
     const missing: string[] = [];
-    if (!value.NEXT_PUBLIC_SUPABASE_URL || !value.NEXT_PUBLIC_SUPABASE_ANON_KEY) missing.push("Supabase auth keys");
+    if (!supabaseUrl || !(value.SUPABASE_ANON_KEY ?? value.NEXT_PUBLIC_SUPABASE_ANON_KEY)) missing.push("SUPABASE_URL and SUPABASE_ANON_KEY");
     if (!value.ENCRYPTION_KEY) missing.push("ENCRYPTION_KEY");
     if (!value.CRON_SECRET) missing.push("CRON_SECRET");
     if (missing.length) {
@@ -80,8 +88,15 @@ export function resetEnvCache() {
 }
 
 export const isDemoMode = () => env().APP_MODE === "demo";
-export const isSupabaseConfigured = () =>
-  Boolean(env().NEXT_PUBLIC_SUPABASE_URL && env().NEXT_PUBLIC_SUPABASE_ANON_KEY);
+/** Supabase project URL and anon/publishable key, or null when Supabase Auth is not configured. */
+export function supabaseConfig(): { url: string; anonKey: string } | null {
+  const e = env();
+  const url = e.SUPABASE_URL ?? e.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = e.SUPABASE_ANON_KEY ?? e.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return url && anonKey ? { url: url.replace(/\/$/, ""), anonKey } : null;
+}
+
+export const isSupabaseConfigured = () => supabaseConfig() !== null;
 
 export function platformAdminEmails(): string[] {
   return (env().PLATFORM_ADMIN_EMAILS ?? "")

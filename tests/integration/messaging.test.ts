@@ -33,15 +33,15 @@ const getMsg = async (id: string) => (await asSystem((tx) => tx.select().from(me
 
 function useProductionMode() {
   process.env.APP_MODE = "production";
-  process.env.NEXT_PUBLIC_SUPABASE_URL = "https://example.supabase.co";
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "anon";
+  process.env.SUPABASE_URL = "https://example.supabase.co";
+  process.env.SUPABASE_ANON_KEY = "anon";
   resetEnvCache();
 }
 
 afterEach(() => {
   process.env.APP_MODE = "demo";
-  process.env.NEXT_PUBLIC_SUPABASE_URL = "";
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "";
+  process.env.SUPABASE_URL = "";
+  process.env.SUPABASE_ANON_KEY = "";
   resetEnvCache();
   setAdapterOverrideForTests(null);
 });

@@ -1,6 +1,7 @@
 import "server-only";
 import { and, asc, eq } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 import { roleAtLeast, type MemberRole } from "@/lib/domain";
@@ -36,6 +37,9 @@ export type ServiceContext = {
 };
 
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
+  // Signed-in pages depend on the request: never try to prerender them at build time
+  // (where configuration errors would otherwise fail the whole build).
+  await connection();
   const auth = await getAuthUser();
   if (!auth) return null;
   const [profile] = await asSystem((tx) => tx.select().from(profiles).where(eq(profiles.id, auth.id)));

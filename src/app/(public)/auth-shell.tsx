@@ -21,7 +21,7 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
           )}
           {mode === "unconfigured" && (
             <Alert tone="danger" className="mt-4" title="Authentication is not configured">
-              Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.
+              Set SUPABASE_URL and SUPABASE_ANON_KEY.
             </Alert>
           )}
           <div className="mt-6">{children}</div>

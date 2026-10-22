@@ -34,7 +34,7 @@ describe("environment safety", () => {
   it("refuses production mode without Supabase, encryption key and cron secret", () => {
     process.env.APP_MODE = "production";
     process.env.ENCRYPTION_KEY = "";
-    process.env.NEXT_PUBLIC_SUPABASE_URL = "";
+    process.env.SUPABASE_URL = "";
     resetEnvCache();
     expect(() => env()).toThrow(/Production mode requires/);
   });
@@ -70,5 +70,29 @@ describe("message templates", () => {
     const vars = { contact_name: "Ananya", reference: "ENQ-ABC123", event_type: "Wedding" };
     expect(renderTemplate(body, vars)).toBe("Hi Ananya, ref ENQ-ABC123 for Wedding –");
     expect(whatsappTemplateParams(body, vars)).toEqual(["Ananya", "ENQ-ABC123", "Wedding", ""]);
+  });
+});
+
+describe("Supabase configuration", () => {
+  it("prefers the server-only names, accepts the legacy public names and rejects invalid URLs", async () => {
+    const { supabaseConfig } = await import("@/server/env");
+    process.env.SUPABASE_URL = "https://abcdefgh.supabase.co/";
+    process.env.SUPABASE_ANON_KEY = "anon-key";
+    resetEnvCache();
+    expect(supabaseConfig()).toEqual({ url: "https://abcdefgh.supabase.co", anonKey: "anon-key" });
+
+    process.env.SUPABASE_URL = "";
+    process.env.SUPABASE_ANON_KEY = "";
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://legacy.supabase.co";
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "legacy-key";
+    resetEnvCache();
+    expect(supabaseConfig()).toEqual({ url: "https://legacy.supabase.co", anonKey: "legacy-key" });
+
+    process.env.SUPABASE_URL = "https://supabase.com/dashboard/project/abcdefgh";
+    resetEnvCache();
+    expect(() => env()).toThrow(/Project URL/);
+    process.env.SUPABASE_URL = "abcdefgh";
+    resetEnvCache();
+    expect(() => env()).toThrow(/Project URL/);
   });
 });
