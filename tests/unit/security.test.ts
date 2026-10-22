@@ -88,10 +88,10 @@ describe("Supabase configuration", () => {
     resetEnvCache();
     expect(supabaseConfig()).toEqual({ url: "https://legacy.supabase.co", anonKey: "legacy-key" });
 
-    process.env.SUPABASE_URL = "https://supabase.com/dashboard/project/abcdefgh";
+    process.env.SUPABASE_URL = "eyJhbGciOiJIUzI1NiJ9.not-a-url";
     resetEnvCache();
-    expect(() => env()).toThrow(/Project URL/);
-    process.env.SUPABASE_URL = "abcdefgh";
+    expect(() => env()).toThrow(/API key, not the Project URL/);
+    process.env.SUPABASE_URL = "not a url at all";
     resetEnvCache();
     expect(() => env()).toThrow(/Project URL/);
   });

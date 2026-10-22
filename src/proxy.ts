@@ -1,15 +1,18 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { normalizeSupabaseUrl } from "@/lib/supabase-url";
 
 /**
  * Refreshes the Supabase session cookie on navigation so Server Components see a
  * valid session. Authorization itself is enforced in server code, never here.
  */
 export async function proxy(request: NextRequest) {
-  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)?.trim().replace(/\/$/, "");
+  const rawUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = (process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)?.trim();
   let response = NextResponse.next({ request });
-  if (!url || !key) return response;
+  const normalized = rawUrl ? normalizeSupabaseUrl(rawUrl) : null;
+  if (!normalized || "error" in normalized || !key) return response;
+  const url = normalized.url;
   try {
     const supabase = createServerClient(url, key, {
       cookies: {
