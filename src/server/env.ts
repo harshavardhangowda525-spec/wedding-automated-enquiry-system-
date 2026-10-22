@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { normalizeSupabaseUrl } from "@/lib/supabase-url";
 
 const optional = z
   .string()
@@ -65,9 +66,13 @@ export function env(): Env {
     throw new Error(`Invalid environment configuration: ${issues}`);
   }
   const value = parsed.data;
-  const supabaseUrl = value.SUPABASE_URL ?? value.NEXT_PUBLIC_SUPABASE_URL;
-  if (supabaseUrl && !/^https?:\/\/[^/\s]+\/?$/.test(supabaseUrl)) {
-    throw new Error("Invalid environment configuration: SUPABASE_URL must be the Supabase Project URL, e.g. https://abcdefgh.supabase.co");
+  const rawSupabaseUrl = value.SUPABASE_URL ?? value.NEXT_PUBLIC_SUPABASE_URL;
+  let supabaseUrl: string | undefined;
+  if (rawSupabaseUrl) {
+    const normalized = normalizeSupabaseUrl(rawSupabaseUrl);
+    if ("error" in normalized) throw new Error(`Invalid environment configuration: ${normalized.error}`);
+    supabaseUrl = normalized.url;
+    value.SUPABASE_URL = supabaseUrl;
   }
   if (value.APP_MODE === "production") {
     const missing: string[] = [];
@@ -93,7 +98,7 @@ export function supabaseConfig(): { url: string; anonKey: string } | null {
   const e = env();
   const url = e.SUPABASE_URL ?? e.NEXT_PUBLIC_SUPABASE_URL;
   const anonKey = e.SUPABASE_ANON_KEY ?? e.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return url && anonKey ? { url: url.replace(/\/$/, ""), anonKey } : null;
+  return url && anonKey ? { url, anonKey } : null;
 }
 
 export const isSupabaseConfigured = () => supabaseConfig() !== null;
