@@ -273,8 +273,15 @@ async function performAction(
       const [pending] = await tx
         .select({ n: count() })
         .from(messages)
-        .where(and(eq(messages.leadId, lead.id), eq(messages.purpose, action.purpose), inArray(messages.status, ["draft", "awaiting_approval", "queued"])));
-      if (Number(pending.n) > 0) return skip("a draft for this purpose is already waiting");
+        .where(
+          and(
+            eq(messages.leadId, lead.id),
+            eq(messages.purpose, action.purpose),
+            // An acknowledgement already sent (e.g. the chatbot's automatic WhatsApp confirmation) is not repeated.
+            inArray(messages.status, action.purpose === "acknowledgement" ? ["draft", "awaiting_approval", "queued", "sending", "sent", "delivered"] : ["draft", "awaiting_approval", "queued"]),
+          ),
+        );
+      if (Number(pending.n) > 0) return skip(action.purpose === "acknowledgement" ? "an acknowledgement is already waiting or was sent" : "a draft for this purpose is already waiting");
       const channel = action.channel === "auto" ? (lead.preferredChannel === "email" && lead.email ? "email" : "whatsapp") : action.channel;
       if (channel === "email" && !lead.email) return skip("client has no email");
       try {

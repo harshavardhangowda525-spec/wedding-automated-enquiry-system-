@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EnquiryForm } from "@/components/client/enquiry-form";
 import { Alert } from "@/components/ui";
@@ -41,6 +42,20 @@ export default async function EnquirePage({ params }: Props) {
           <Alert tone="warning" className="mb-6" title="Demonstration form">
             This form belongs to a demo environment. Submissions are stored as sample data and no real messages are sent.
           </Alert>
+        )}
+        {services.length > 0 && (
+          <Link
+            href={`/enquire/${studio.slug}/chat`}
+            className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-line bg-white px-4 py-3 text-sm shadow-sm hover:border-gold"
+          >
+            <span>
+              <span className="font-medium text-ink">Prefer to chat?</span>{" "}
+              <span className="text-muted">Answer a few quick questions instead of filling in the form.</span>
+            </span>
+            <span className="font-medium" style={{ color: studio.brandColor }}>
+              Start chat →
+            </span>
+          </Link>
         )}
         <div className="rounded-2xl border border-line bg-white p-5 shadow-sm sm:p-8">
           {services.length === 0 ? (

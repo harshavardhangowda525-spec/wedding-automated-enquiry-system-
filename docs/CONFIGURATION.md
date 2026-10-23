@@ -55,6 +55,18 @@ Meta app setup: Webhooks → WhatsApp Business Account → callback `APP_URL/api
 
 Rules enforced before every send: consent recorded, not opted out, lead still relevant, no identical message in 7 days, automated-message limits and spacing, business hours for automated sends, and the 24-hour customer-service window (outside it only approved templates can be sent). Inbound "STOP"/"unsubscribe" replies opt the client out and cancel pending messages.
 
+## Enquiry chatbot
+
+Each studio has a chat version of its enquiry form at `APP_URL/enquire/<studio>/chat`. The regular form links to it, and the dashboard shows the link to share.
+
+- **Without AI**, the bot asks guided questions with buttons for event type, date, services, budget and consent.
+- **With AI** (`XAI_API_KEY` + `AI_MODEL`), clients can also answer in their own words. Grok only *extracts* details; the server validates every value and decides what to ask next. The bot never quotes prices, promises dates or confirms bookings.
+- **When the client confirms**, the lead is created (source "Website chat") with the same validation, consent, spam and duplicate checks as the form. A WhatsApp confirmation is then queued **without staff approval**, but only when:
+  1. WhatsApp is connected (Settings → Integrations), and
+  2. the "Enquiry acknowledgement (WhatsApp)" template has its WhatsApp template name set and is marked **Approved** (only after Meta has approved it).
+
+  Otherwise the lead is still created, and its timeline shows why the confirmation was skipped. The send still goes through consent, opt-out and duplicate checks, and the default "New enquiry" automation does not draft a second acknowledgement.
+
 ## Email (SMTP)
 
 `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `EMAIL_FROM`. Messages go from `EMAIL_FROM` with the studio name as display name and the studio email as Reply-To. SMTP acceptance is recorded as **Sent**; email is never marked Delivered, because SMTP does not confirm inbox delivery.

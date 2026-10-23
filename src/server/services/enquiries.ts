@@ -11,6 +11,7 @@ import { env } from "@/server/env";
 import { emitEvent } from "@/server/jobs/queue";
 import { hashIp } from "@/server/lib/crypto";
 import { RateLimitError } from "@/server/lib/errors";
+import { queueAutoAcknowledgement } from "@/server/messaging/service";
 import { checkRateLimit } from "@/server/lib/rate-limit";
 import { recordActivity } from "./activity";
 import { generateReference } from "./leads";
@@ -90,14 +91,15 @@ export const enquirySchema = z.object({
 export type EnquiryInput = z.input<typeof enquirySchema>;
 
 export type EnquiryResult =
-  | { ok: true; reference: string; studioName: string; duplicate: boolean }
+  | { ok: true; reference: string; studioName: string; duplicate: boolean; leadId: string; autoAcknowledgement?: "queued" | "skipped" }
   | { ok: false; error: string; fieldErrors?: Record<string, string[]> };
 
 export async function submitEnquiry(
   slug: string,
   raw: unknown,
-  meta: { ip?: string | null; userAgent?: string | null; now?: number } = {},
+  meta: { ip?: string | null; userAgent?: string | null; now?: number; channel?: "form" | "chat" } = {},
 ): Promise<EnquiryResult> {
+  const viaChat = meta.channel === "chat";
   const found = await getPublicStudioBySlug(slug);
   if (!found) return { ok: false, error: "This enquiry form is not available." };
   const { studio } = found;
@@ -161,7 +163,7 @@ export async function submitEnquiry(
         summary: "The client submitted the enquiry form again with the same details.",
         data: { message: enabled.has("additionalRequirements") ? (data.message ?? null) : null },
       });
-      return { ok: true as const, reference: recent.reference, studioName: studio.name, duplicate: true };
+      return { ok: true as const, reference: recent.reference, studioName: studio.name, duplicate: true, leadId: recent.id };
     }
 
     const reference = await generateReference(tx, studio.id);
@@ -189,7 +191,7 @@ export async function submitEnquiry(
         budgetRange: enabled.has("budgetRange") ? (data.budgetRange ?? null) : null,
         message: enabled.has("additionalRequirements") ? (data.message ?? null) : null,
         preferredChannel: enabled.has("preferredChannel") ? data.preferredChannel : "any",
-        source: "website_form",
+        source: viaChat ? "website_chat" : "website_form",
         consentContact: true,
         consentAt: now,
         possibleDuplicateOf: recent?.id ?? null,
@@ -203,17 +205,21 @@ export async function submitEnquiry(
       kind: "contact",
       granted: true,
       text: settings.enquiryForm.consentText,
-      source: "public_enquiry_form",
+      source: viaChat ? "public_enquiry_chat" : "public_enquiry_form",
       ipHash,
       userAgent: meta.userAgent?.slice(0, 300) ?? null,
     });
     await recordActivity(svc, {
       leadId: lead.id,
       type: "lead_created",
-      summary: `Enquiry received via website form (${reference})`,
+      summary: `Enquiry received via ${viaChat ? "website chat" : "website form"} (${reference})`,
       data: { reference, possibleDuplicateOf: recent?.id ?? null },
     });
+    // Chat enquiries get an immediate WhatsApp confirmation (approved template only).
+    const autoAcknowledgement = viaChat
+      ? await queueAutoAcknowledgement({ tx, studioId: studio.id, userId: null, role: "system", actorType: "system" }, lead.id)
+      : undefined;
     await emitEvent(tx, studio.id, { trigger: "lead_created", leadId: lead.id, key: `lead_created:${lead.id}` });
-    return { ok: true as const, reference, studioName: studio.name, duplicate: false };
+    return { ok: true as const, reference, studioName: studio.name, duplicate: false, leadId: lead.id, autoAcknowledgement };
   });
 }

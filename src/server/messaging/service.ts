@@ -1,5 +1,5 @@
 import "server-only";
-import { and, count, desc, eq, gte, inArray, ne, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { CLOSED_STATUSES, DEMO_LABEL, roleAtLeast } from "@/lib/domain";
 import { nextBusinessMoment, isWithinBusinessHours } from "@/lib/time";
@@ -210,6 +210,50 @@ export async function approveMessage(svc: ServiceContext, id: string) {
     .where(eq(messages.id, id));
   await enqueueJob(svc.tx, { type: "message.send", studioId: svc.studioId, payload: { messageId: id }, idempotencyKey: `send:${id}`, maxAttempts: 5 });
   await recordActivity(svc, { leadId: msg.leadId, type: "message_approved", summary: `${msg.channel === "whatsapp" ? "WhatsApp message" : "Email"} approved and queued`, data: { messageId: id } });
+}
+
+/**
+ * Immediately confirms a client-initiated enquiry on WhatsApp, without staff approval.
+ * Only a template the studio has marked approved (i.e. approved by Meta) is used, because
+ * WhatsApp requires an approved template for business-initiated messages. Every send still
+ * goes through the full send policy (consent, opt-out, duplicates) in the send job.
+ */
+export async function queueAutoAcknowledgement(svc: ServiceContext, leadId: string): Promise<"queued" | "skipped"> {
+  const [tpl] = await svc.tx
+    .select()
+    .from(messageTemplates)
+    .where(
+      and(
+        eq(messageTemplates.studioId, svc.studioId),
+        eq(messageTemplates.channel, "whatsapp"),
+        eq(messageTemplates.purpose, "acknowledgement"),
+        eq(messageTemplates.active, true),
+        eq(messageTemplates.approved, true),
+        isNotNull(messageTemplates.whatsappTemplateName),
+      ),
+    )
+    .limit(1);
+  if (!tpl) {
+    const [lead] = await svc.tx.select({ phone: leads.phone }).from(leads).where(eq(leads.id, leadId));
+    const reason = "Automatic WhatsApp confirmation not sent: no active WhatsApp acknowledgement template is marked approved (Settings → Message templates)";
+    await svc.tx.insert(messages).values({
+      studioId: svc.studioId,
+      leadId,
+      channel: "whatsapp",
+      status: "skipped",
+      purpose: "acknowledgement",
+      body: "Automatic WhatsApp confirmation",
+      toAddress: lead?.phone ?? null,
+      skipReason: reason,
+      createdByType: "system",
+    });
+    await recordActivity(svc, { leadId, type: "message_skipped", summary: reason, touchLead: false });
+    return "skipped";
+  }
+  const msg = await createDraftFromTemplate(svc, leadId, tpl.id, { status: "awaiting_approval" });
+  await queueAutomatedMessage(svc.tx, svc.studioId, msg.id);
+  await recordActivity(svc, { leadId, type: "auto_acknowledgement", summary: "Automatic WhatsApp confirmation queued (approved template)", data: { messageId: msg.id }, touchLead: false });
+  return "queued";
 }
 
 /** Queues a message without per-message approval (only for explicitly enabled automations). */

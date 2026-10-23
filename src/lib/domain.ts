@@ -74,6 +74,7 @@ export function canTransition(from: LeadStatus, to: LeadStatus): boolean {
 
 export const LEAD_SOURCES = [
   "website_form",
+  "website_chat",
   "instagram",
   "whatsapp",
   "phone",
@@ -85,6 +86,7 @@ export const LEAD_SOURCES = [
 export type LeadSource = (typeof LEAD_SOURCES)[number];
 export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
   website_form: "Website form",
+  website_chat: "Website chat",
   instagram: "Instagram",
   whatsapp: "WhatsApp",
   phone: "Phone call",

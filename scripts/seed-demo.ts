@@ -8,9 +8,9 @@
  * as "Sample" in the UI; demo studios always use the simulated messaging adapter.
  */
 import "dotenv/config";
-import { eq, inArray, like, sql } from "drizzle-orm";
+import { and, eq, inArray, like, sql } from "drizzle-orm";
 import { asSystem, closeDb, withStudio } from "@/server/db/client";
-import { activities, calendarEntries, consents, leads, localAuthUsers, messages, profiles, services, studioMembers, studios, tasks } from "@/server/db/schema";
+import { activities, calendarEntries, consents, leads, localAuthUsers, messageTemplates, messages, profiles, services, studioMembers, studios, tasks } from "@/server/db/schema";
 import { isSupabaseConfigured } from "@/server/env";
 import { createLocalUser } from "@/server/auth/session";
 import { createStudio } from "@/server/services/studios";
@@ -82,6 +82,11 @@ async function seedStudio(opts: { name: string; slug: string; ownerEmail: string
       .where(eq(studios.id, studio.id));
     const svcRows = await tx.select().from(services).where(eq(services.studioId, studio.id));
     for (const s of svcRows) if (PRICES[s.name]) await tx.update(services).set({ priceMinor: PRICES[s.name] }).where(eq(services.id, s.id));
+    // Sample studios simulate an approved WhatsApp template so the chatbot's automatic confirmation can be demonstrated.
+    await tx
+      .update(messageTemplates)
+      .set({ approved: true })
+      .where(and(eq(messageTemplates.studioId, studio.id), eq(messageTemplates.channel, "whatsapp"), eq(messageTemplates.purpose, "acknowledgement")));
   });
 
   await withStudio(studio.id, async (tx) => {

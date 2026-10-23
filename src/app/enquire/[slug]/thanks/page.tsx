@@ -4,9 +4,9 @@ import { getPublicStudioBySlug } from "@/server/services/studios";
 
 export const metadata = { title: "Enquiry received", robots: { index: false } };
 
-export default async function ThanksPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ ref?: string }> }) {
+export default async function ThanksPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ ref?: string; wa?: string }> }) {
   const { slug } = await params;
-  const { ref } = await searchParams;
+  const { ref, wa } = await searchParams;
   const found = await getPublicStudioBySlug(slug);
   if (!found) notFound();
   const reference = ref && /^ENQ-[A-Z0-9]{6}$/.test(ref) ? ref : null;
@@ -24,6 +24,7 @@ export default async function ThanksPage({ params, searchParams }: { params: Pro
             Your enquiry reference: <span className="font-mono font-semibold">{reference}</span>
           </p>
         )}
+        {wa === "1" && <p className="mt-4 text-sm text-ink-soft">We&apos;re also sending a confirmation to your WhatsApp number.</p>}
         <p className="mt-5 text-xs text-muted">You can reply STOP on WhatsApp at any time to stop receiving messages.</p>
       </div>
     </div>

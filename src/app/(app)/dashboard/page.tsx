@@ -138,6 +138,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 Preview
               </ButtonLink>
             </div>
+            <p className="mt-4 text-sm font-semibold">Chat link</p>
+            <p className="mt-0.5 text-xs text-muted">Clients answer questions in a chat; they get an automatic WhatsApp confirmation when done.</p>
+            <p className="mt-1 break-all rounded-lg bg-sand px-3 py-2 font-mono text-xs">{enquiryUrl}/chat</p>
+            <div className="mt-3 flex gap-2">
+              <CopyButton value={`${enquiryUrl}/chat`} label="Copy chat link" />
+              <ButtonLink href={`/enquire/${data.studio.slug}/chat`} size="sm" variant="ghost" target="_blank">
+                Preview
+              </ButtonLink>
+            </div>
           </Card>
 
           <Card>

@@ -10,6 +10,7 @@ WeddingFlow AI centralises enquiries, helps staff respond professionally and on 
 | Area | What you get |
 | --- | --- |
 | Public enquiry form | Branded `/enquire/<studio>` page; configurable optional fields; consent capture; signed anti-spam token, honeypot, rate limiting, duplicate detection; reference number; "received, not booked" confirmation |
+| Enquiry chatbot | `/enquire/<studio>/chat`: clients answer one question at a time (or type everything at once and Grok extracts it); every answer is validated on the server. Without AI it falls back to guided questions. On completion it creates the lead like the form does and immediately sends a WhatsApp confirmation using the studio's approved acknowledgement template |
 | Lead CRM | `/leads` table and pipeline views, search & filters, pagination, bulk actions with per-lead validation, CSV export (admins, audited), lead detail with timeline, notes, tags, assignment, contact logging, deposit recording, validated stage transitions |
 | Follow-ups & calendar | Task workspace (overdue / today / upcoming), month/week/day calendar, consultations, holds, bookings, quotation expiries; availability derived only from recorded data; conflict warnings |
 | AI assistant (xAI Grok) | Enquiry & conversation summaries, reply/follow-up drafts, priority suggestion with explanation, next-step suggestion, quotation drafts built from configured prices only. Schema-validated output, timeouts, bounded retries, per-studio rate limits, usage tracking, graceful "AI unavailable" behaviour |
